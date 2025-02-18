@@ -6,7 +6,7 @@ from keyboards.for_view_kb import view_action
 from keyboards.for_start_kb import start_action
 from check_user import check_users
 import sqlalchemy as db
-from db.sqlite_db import sqlite_select_all, sqlite_select_all_task
+from db.sqlite_db import sqlite_select_all, sqlite_select_all_task, sqlite_if_not_add_tasks_month
 from rest import get_month
 
 router = Router()
@@ -14,6 +14,8 @@ router = Router()
 @router.message(Command("view"))
 async def cmd_view(message: Message):
     if check_users(message.from_user.id) == True:
+        if len(sqlite_select_all(get_month()[0])) == 0:
+            sqlite_if_not_add_tasks_month()
         await message.answer("За какой период смотрим?", reply_markup=view_action())
     else:
         await message.answer_dice(emoji="🎲")

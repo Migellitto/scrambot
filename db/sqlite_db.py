@@ -7,6 +7,7 @@ CREATE TABLE tasks (
 );
 """
 import sqlalchemy as db
+from sqlalchemy import func
 from rest import get_month
 
 def sqlite_db_engine():
@@ -56,5 +57,28 @@ def sqlite_insert_new_task(task_name):
     conn.execute(insrt)
     conn.commit()
 
+def sqlite_delete_task(task_id):
+    dlt = db.delete(tasks).where(tasks.columns.task_id == task_id)
+    conn = sqlite_conn()
+    conn.execute(dlt)
+    conn.commit()
 
-# print(sqlite_select_all(2))
+def sqlite_if_not_add_tasks_month():
+    max_id = func.max(tasks.columns.task_id)
+    conn = sqlite_conn()
+    max_id = conn.execute(max_id).one()[0]
+    # print(f"MAX ID: {max_id}")
+    slt = db.select(tasks.columns.task_month).where(tasks.columns.task_id == int(max_id))
+    conn = sqlite_conn()
+    month = int(conn.execute(slt).one()[0])
+    slt = db.select(tasks).where(tasks.columns.task_month == month)
+    conn = sqlite_conn()
+    select_all_results = conn.execute(slt).fetchall()
+    # print(f"за месяц {month} записи в БД: {select_all_results}")
+    month = int(get_month()[0])
+    for row in select_all_results:
+        # print(f"Добавляем в БД строку {row[1]}, {month}, 1")
+        insrt = db.insert(tasks).values(task_name=row[1], task_month=month, task_is_active=1)
+        conn = sqlite_conn()
+        conn.execute(insrt)
+        conn.commit()

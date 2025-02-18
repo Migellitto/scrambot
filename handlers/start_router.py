@@ -10,10 +10,10 @@ from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from keyboards.for_start_kb import start_action, tasks_list_done_kb, tasks_list_fail_kb
+from keyboards.for_start_kb import start_action, tasks_list_done_kb, tasks_list_fail_kb, tasks_list_delete_kb
 from keyboards.for_view_kb import view_action
 from check_user import check_users
-from db.sqlite_db import sqlite_task_id_update_0, sqlite_task_id_update_1, sqlite_insert_new_task
+from db.sqlite_db import sqlite_task_id_update_0, sqlite_task_id_update_1, sqlite_insert_new_task, sqlite_delete_task
 
 router = Router()  # [1]
 
@@ -51,20 +51,20 @@ async def fsm_second_step(message: Message, state: FSMContext):
 @router.message(F.text.lower() == "удаление")
 async def answer_del(message: Message):
     if check_users(message.from_user.id) == True:
-        await message.answer("НЕ РАБОТАЕТ", reply_markup=ReplyKeyboardRemove())
+        await message.answer("Удалить 🗑 задание по ID", reply_markup=tasks_list_delete_kb())
 
 @router.message(F.text.lower() == "пометить как выполненное")
-async def answer_del(message: Message):
+async def answer_done(message: Message):
     if check_users(message.from_user.id) == True:
-        await message.answer("Пометить как выполненное по ID ✅", reply_markup=tasks_list_done_kb())
+        await message.answer("Пометить как выполненное ✅ по ID ✅", reply_markup=tasks_list_done_kb())
 
 @router.message(F.text.lower() == "пометить как невыполненное")
-async def answer_del(message: Message):
+async def answer_fail(message: Message):
     if check_users(message.from_user.id) == True:
-        await message.answer("Пометить как НЕвыполненное по ID ❌", reply_markup=tasks_list_fail_kb())
+        await message.answer("Пометить как НЕвыполненное ❌ по ID ❌", reply_markup=tasks_list_fail_kb())
 
 @router.message(F.text.startswith("✅ ID "))
-async def answer_del(message: Message):
+async def answer_ddone(message: Message):
     if check_users(message.from_user.id) == True:
         await message.answer(f"{message.text}", reply_markup=ReplyKeyboardRemove())
         task_id = int(re.sub("✅ ID ","",message.text))
@@ -72,9 +72,17 @@ async def answer_del(message: Message):
         await message.answer(f"task_id {task_id}", reply_markup=start_action())
 
 @router.message(F.text.startswith("❌ ID "))
-async def answer_del(message: Message):
+async def answer_ffail(message: Message):
     if check_users(message.from_user.id) == True:
         await message.answer(f"{message.text}", reply_markup=ReplyKeyboardRemove())
         task_id = int(re.sub("❌ ID ","",message.text))
         sqlite_task_id_update_1(task_id)
+        await message.answer(f"task_id {task_id}", reply_markup=start_action())
+
+@router.message(F.text.startswith("🗑 ID "))
+async def answer_remove(message: Message):
+    if check_users(message.from_user.id) == True:
+        await message.answer(f"{message.text}", reply_markup=ReplyKeyboardRemove())
+        task_id = int(re.sub("🗑 ID ","",message.text))
+        sqlite_delete_task(task_id)
         await message.answer(f"task_id {task_id}", reply_markup=start_action())

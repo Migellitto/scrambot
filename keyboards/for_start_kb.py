@@ -35,3 +35,11 @@ def tasks_list_fail_kb() -> ReplyKeyboardMarkup:
         kb.button(text=f"❌ ID {string[0]}")
     kb.adjust(2)
     return kb.as_markup(resize_keyboard=True)
+
+def tasks_list_delete_kb() -> ReplyKeyboardMarkup:
+    kb = ReplyKeyboardBuilder()
+    data = sqlite_select_all(get_month()[0])
+    for string in data:
+        kb.button(text=f"🗑 ID {string[0]}")
+    kb.adjust(2)
+    return kb.as_markup(resize_keyboard=True)
