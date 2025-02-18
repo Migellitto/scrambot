@@ -10,7 +10,7 @@ from handlers import start_router, view_router, different_types
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 # Объект бота
-token = '1693087967:AAEzgIK2_iK0zg6PnGTfk5ZfW6oof_fWXRw'
+token = '#################################'
 bot = Bot(token=token)
 # Диспетчер
 dp = Dispatcher()
